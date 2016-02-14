@@ -6,7 +6,7 @@ var Cookie = function(options){
   this.maxAge = null;
   this.httpOnly = true;
   //if (options) _.merge(this, options);
-}
+};
 
 var encode = encodeURIComponent;
 var decode = decodeURIComponent;
@@ -27,9 +27,10 @@ Cookie.prototype.serialize = function(key, val){
     if (opt.secure) pairs.push('Secure');
 
     return pairs.join('; ');
-};
+  };
+
   return serialize(key, val, this);
-}
+};
 
 var setCurrentParseUser = function(userSession){
   if (!userSession || !userSession.id || !userSession.sessionToken) {
@@ -44,7 +45,7 @@ var setCurrentParseUser = function(userSession){
   Parse.User._currentUser._synchronizeAllAuthData();
   Parse.User._currentUser._refreshCache();
   Parse.User._currentUser._opSetQueue = [{}];
-}
+};
 
 var getCurrentParseUserSession = function(){
   var u = Parse.User.current();
@@ -52,7 +53,7 @@ var getCurrentParseUserSession = function(){
     return;
   }
   return {id:u.id, sessionToken: u.getSessionToken()};
-}
+};
 
 
 module.exports = function (options) {
@@ -61,7 +62,7 @@ module.exports = function (options) {
   var cookieOptions = options.cookie || {};
   var forcedCookieOptions = { httpOnly: true, secure: true };
   // forcedCookieOptions will overwrite same keys in cookieOptions
-  cookieOptions = Parse._.defaults(forcedCookieOptions, cookieOptions);
+  cookieOptions = _.defaults(forcedCookieOptions, cookieOptions);
 
   return function parseExpressCookieSession(req, res, next) {
 
@@ -70,7 +71,7 @@ module.exports = function (options) {
 
     // Expect express.cookieParser to set req.secret before this middleware.
     var signatureSecret = req.secret;
-    if (Parse._.isEmpty(signatureSecret)) {
+    if (_.isEmpty(signatureSecret)) {
       throw new Error('express.cookieParser middleware must be included' +
         'before this, and initialized with a signing secret');
     }
@@ -87,7 +88,7 @@ module.exports = function (options) {
     var reqParseUserSession;
     var reqCookieJson;  // Used later to determine whether to set response cookie.
     var reqCookieBody = req.cookies[key];
-    if (!Parse._.isEmpty(reqCookieBody)) {
+    if (!_.isEmpty(reqCookieBody)) {
       try {
 
         reqCookieJson = JSON.parse(reqCookieBody);
@@ -95,7 +96,7 @@ module.exports = function (options) {
         if (reqCookieJson && !reqCookieJson.id || !reqCookieJson.sessionToken) {
           throw "Invalid session";
         }
-        /*if (!Parse._.isEmpty(reqCookieJson)) {
+        /*if (!_.isEmpty(reqCookieJson)) {
           reqParseUserSession = utils.parseJSONCookie(reqCookieJson);
         }*/
       } catch (e) {
@@ -109,7 +110,7 @@ module.exports = function (options) {
     res.on('header', function() {
       var resParseUserSession = getCurrentParseUserSession();
       // If user is logged out, clear cookie.
-      if (Parse._.isUndefined(resParseUserSession)) {
+      if (_.isUndefined(resParseUserSession)) {
         cookie.expires = new Date(0);
         res.setHeader('Set-Cookie', cookie.serialize(key, ''));
         return;
@@ -134,8 +135,9 @@ module.exports = function (options) {
         
       }
     });
-  
-    if (options.fetchUser && !Parse._isNullOrUndefined(Parse.User.current())) {
+
+    if (options.fetchUser &&
+        !(_.isNull(Parse.User.current()) || _.isUndefined(Parse.User.current()))) {
       Parse.User.current().fetch().then(function(user) {
         next();
       }, function() {
@@ -147,4 +149,5 @@ module.exports = function (options) {
       next();
     }
   };
-}
+};
+
